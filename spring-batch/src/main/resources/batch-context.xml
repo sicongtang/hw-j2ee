@@ -1,0 +1,45 @@
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch	http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
+	default-autowire="byName" default-init-method="init">
+
+	<!-- JobRepository and JobLauncher are configuration/setup classes -->
+	<bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean" />
+
+	<bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+
+	<bean id="jobRegistry" class="org.springframework.batch.core.configuration.support.MapJobRegistry" />
+
+	<!-- A BeanPostProcessor that registers Job beans with a JobRegistry. -->
+	<bean class="org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor">
+		<property name="jobRegistry" ref="jobRegistry" />
+	</bean>
+
+	<!-- ItemReader reads a complete line one by one from input file -->
+	<bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+	</bean>
+
+	<!-- ItemWriter writes a line into output flat file -->
+	<bean id="flatFileItemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
+	</bean>
+
+	<!-- Optional ItemProcessor to perform business logic/filtering on the input records -->
+	<bean id="itemProcessor" class="com.websystique.springbatch.ExamResultItemProcessor" />
+
+	<!-- Step will need a transaction manager -->
+	<bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+	<!-- Actual Job -->
+	<batch:job id="examResultBatchJob" restartable="true">
+		<batch:step id="processFiles">
+			<batch:tasklet allow-start-if-complete="false" start-limit="1" transaction-manager="transactionManager">
+				<batch:chunk reader="flatFileItemReader" writer="flatFileItemWriter" processor="itemProcessor"
+					commit-interval="10" />
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+
+</beans>			
