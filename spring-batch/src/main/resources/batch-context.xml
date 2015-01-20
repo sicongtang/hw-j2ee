@@ -4,7 +4,6 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
 	default-autowire="byName" default-init-method="init">
 
-	<!-- JobRepository and JobLauncher are configuration/setup classes -->
 	<bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean" />
 
 	<bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
@@ -13,31 +12,42 @@
 
 	<bean id="jobRegistry" class="org.springframework.batch.core.configuration.support.MapJobRegistry" />
 
-	<!-- A BeanPostProcessor that registers Job beans with a JobRegistry. -->
 	<bean class="org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor">
 		<property name="jobRegistry" ref="jobRegistry" />
 	</bean>
 
-	<!-- ItemReader reads a complete line one by one from input file -->
-	<bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+	<bean id="examRes" class="me.sicongtang.j2ee.springbatch.ExamResult">
+		<property name="studentName" value="John"></property>
+		<property name="percentage" value="80"></property>
 	</bean>
 
-	<!-- ItemWriter writes a line into output flat file -->
-	<bean id="flatFileItemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
+
+	<bean id="customReader" class="me.sicongtang.j2ee.springbatch.CustomReader" scope="step">
+		<constructor-arg index="0">
+			<list>
+				<ref bean="examRes" />
+			</list>
+		</constructor-arg>
 	</bean>
 
-	<!-- Optional ItemProcessor to perform business logic/filtering on the input records -->
-	<bean id="itemProcessor" class="com.websystique.springbatch.ExamResultItemProcessor" />
+	<bean id="customWriter" class="me.sicongtang.j2ee.springbatch.CustomWriter" scope="step">
+	</bean>
 
-	<!-- Step will need a transaction manager -->
+	<bean id="itemProcessor" class="me.sicongtang.j2ee.springbatch.ExamResultItemProcessor" />
+
 	<bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+	<bean id="springBatchJob" class="me.sicongtang.j2ee.springbatch.SpringBatchJob">
+		<property name="jobName" value="examResultBatchJob" />
+		<property name="jobLocator" ref="jobRegistry" />
+		<property name="jobLauncher" ref="jobLauncher" />
+	</bean>
 
 	<!-- Actual Job -->
 	<batch:job id="examResultBatchJob" restartable="true">
 		<batch:step id="processFiles">
 			<batch:tasklet allow-start-if-complete="false" start-limit="1" transaction-manager="transactionManager">
-				<batch:chunk reader="flatFileItemReader" writer="flatFileItemWriter" processor="itemProcessor"
-					commit-interval="10" />
+				<batch:chunk reader="customReader" writer="customWriter" processor="itemProcessor" commit-interval="10" />
 			</batch:tasklet>
 		</batch:step>
 	</batch:job>

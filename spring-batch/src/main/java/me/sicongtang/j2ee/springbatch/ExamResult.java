@@ -1,14 +1,10 @@
 package me.sicongtang.j2ee.springbatch;
 
-import org.joda.time.LocalDate;
-
-
 
 public class ExamResult {
 	
 
 	private String studentName;
-	private LocalDate dob;
 	private double percentage;
 	
 
@@ -20,13 +16,6 @@ public class ExamResult {
 		this.studentName = studentName;
 	}
 	
-	public LocalDate getDob() {
-		return dob;
-	}
-	
-	public void setDob(LocalDate dob) {
-		this.dob = dob;
-	}
 	
 	public double getPercentage() {
 		return percentage;
@@ -38,7 +27,7 @@ public class ExamResult {
 
 	@Override
 	public String toString() {
-		return "ExamResult [studentName=" + studentName + ", dob=" + dob + ", percentage=" + percentage + "]";
+		return "ExamResult [studentName=" + studentName + ", percentage=" + percentage + "]";
 	}
 	
 	
