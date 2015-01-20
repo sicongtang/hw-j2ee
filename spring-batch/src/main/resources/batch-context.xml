@@ -1,7 +1,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:batch="http://www.springframework.org/schema/batch"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/batch	http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
+		http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd"
 	default-autowire="byName" default-init-method="init">
 
 	<bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean" />
@@ -21,16 +22,54 @@
 		<property name="percentage" value="80"></property>
 	</bean>
 
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/test" />
+		<property name="username" value="root" />
+		<property name="password" value="" />
+		<property name="maxActive" value="2" />
+		<property name="validationQuery" value="SELECT 1" />
+		<property name="testWhileIdle" value="true" />
+	</bean>
 
-	<bean id="customReader" class="me.sicongtang.j2ee.springbatch.CustomReader" scope="step">
+	<!-- <bean id="customReader" class="me.sicongtang.j2ee.springbatch.CustomReader" scope="step">
 		<constructor-arg index="0">
 			<list>
 				<ref bean="examRes" />
 			</list>
 		</constructor-arg>
-	</bean>
-
+	</bean> -->
+	
 	<bean id="customWriter" class="me.sicongtang.j2ee.springbatch.CustomWriter" scope="step">
+	</bean>
+	
+	
+	<bean id="examResultRowMapper" class="me.sicongtang.j2ee.springbatch.ExamResultRowMapper"></bean>
+
+	<bean id="customReader" class="org.springframework.batch.item.database.JdbcPagingItemReader">
+		<property name="dataSource" ref="dataSource" />
+		<property name="queryProvider">
+			<bean class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean">
+				<property name="selectClause" value="select *" />
+				<property name="fromClause" value="from ExamResult" />
+				<property name="whereClause" value="where status=:status" />
+
+				<property name="sortKeys">
+					<map>
+						<entry key="id">
+							<util:constant static-field="org.springframework.batch.item.database.Order.DESCENDING"/>
+						</entry>
+					</map>
+				</property>
+			</bean>
+		</property>
+		<property name="parameterValues">
+			<map>
+				<entry key="status" value="1" />
+			</map>
+		</property>
+		<property name="pageSize" value="2" />
+		<property name="rowMapper" ref="examResultRowMapper" />
 	</bean>
 
 	<bean id="itemProcessor" class="me.sicongtang.j2ee.springbatch.ExamResultItemProcessor" />

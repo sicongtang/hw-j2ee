@@ -1,13 +1,8 @@
 package me.sicongtang.j2ee.springbatch;
 
-import java.io.File;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import org.apache.log4j.Logger;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionException;
-import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -15,7 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class SpringBatchJob {
-
+	private static Logger logger = Logger.getLogger(SpringBatchJob.class);
 	private String jobName;
 
 	private JobLocator jobLocator;
@@ -23,14 +18,15 @@ public class SpringBatchJob {
 	private JobLauncher jobLauncher;
 
 	public void performJob() {
-		System.out.println("Starting ExamResult Job");
+		logger.info("Starting ExamResult Job");
 
 		try {
 
 			JobExecution result = jobLauncher.run(jobLocator.getJob(jobName), new JobParameters());
-			System.out.println("ExamResult Job completetion details : " + result.toString());
+			logger.info("ExamResult Job completetion details : " + result.toString());
+			
 		} catch (JobExecutionException ex) {
-			System.out.println("ExamResult Job halted with following excpetion :" + ex);
+			logger.error("ExamResult Job halted with following excpetion :" + ex);
 		}
 
 	}
@@ -52,15 +48,16 @@ public class SpringBatchJob {
 		String batchJob = "springBatchJob";
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("batch-context.xml");
 		SpringBatchJob job = applicationContext.getBean(batchJob, SpringBatchJob.class);
-		System.out.println("Quartz job started: " + job);
+
+		logger.info("Quartz job started: " + job);
 
 		try {
 			job.performJob();
-
-		} catch (Exception exception) {
-			System.out.println("Job " + batchJob + " could not be executed : " + exception.getMessage());
+		} catch (Exception e) {
+			logger.error("Job " + batchJob + " could not be executed : " + e.getMessage());
 		}
-		System.out.println("Quartz job end");
+		
+		logger.info("Quartz job end");
 	}
 
 }
