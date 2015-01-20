@@ -13,9 +13,10 @@ public class ExamResultRowMapper implements RowMapper<ExamResult> {
 	public ExamResult mapRow(ResultSet rs, int paramInt) throws SQLException {
 		ExamResult examResult = new ExamResult();
 		
-		examResult.setId(rs.getInt(1));
-		examResult.setStudentName(rs.getString(2));
-		examResult.setPercentage(rs.getDouble(3));
+		examResult.setId(rs.getInt("id"));
+		examResult.setStudentName(rs.getString("studentName"));
+		examResult.setPercentage(rs.getDouble("percentage"));
+		examResult.setExamName(rs.getString("examName"));
 
 		logger.info("print in mapper, examResult = " + examResult);
         return examResult;

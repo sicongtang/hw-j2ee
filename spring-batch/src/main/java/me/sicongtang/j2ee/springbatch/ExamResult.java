@@ -5,6 +5,7 @@ public class ExamResult {
 	private int id;
 	private String studentName;
 	private double percentage;
+	private String examName;
 
 	public String getStudentName() {
 		return studentName;
@@ -30,9 +31,18 @@ public class ExamResult {
 		this.id = id;
 	}
 
+	public String getExamName() {
+		return examName;
+	}
+
+	public void setExamName(String examName) {
+		this.examName = examName;
+	}
+
 	@Override
 	public String toString() {
-		return "ExamResult [id=" + id + "studentName=" + studentName + ", percentage=" + percentage + "]";
+		return "ExamResult [id=" + id + ", studentName=" + studentName + ", percentage=" + percentage + ", examName="
+				+ examName + "]";
 	}
 
 }

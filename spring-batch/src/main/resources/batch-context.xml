@@ -32,32 +32,26 @@
 		<property name="testWhileIdle" value="true" />
 	</bean>
 
-	<!-- <bean id="customReader" class="me.sicongtang.j2ee.springbatch.CustomReader" scope="step">
-		<constructor-arg index="0">
-			<list>
-				<ref bean="examRes" />
-			</list>
-		</constructor-arg>
-	</bean> -->
-	
-	<bean id="customWriter" class="me.sicongtang.j2ee.springbatch.CustomWriter" scope="step">
-	</bean>
-	
-	
+	<!-- <bean id="customReader" class="me.sicongtang.j2ee.springbatch.CustomReader" scope="step"> <constructor-arg index="0"> 
+		<list> <ref bean="examRes" /> </list> </constructor-arg> </bean> -->
+
+	<!-- <bean id="customWriter" class="me.sicongtang.j2ee.springbatch.CustomWriter" scope="step"> </bean> -->
+
+
 	<bean id="examResultRowMapper" class="me.sicongtang.j2ee.springbatch.ExamResultRowMapper"></bean>
 
-	<bean id="customReader" class="org.springframework.batch.item.database.JdbcPagingItemReader">
+	<bean id="itemReader" class="org.springframework.batch.item.database.JdbcPagingItemReader">
 		<property name="dataSource" ref="dataSource" />
 		<property name="queryProvider">
 			<bean class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean">
-				<property name="selectClause" value="select *" />
-				<property name="fromClause" value="from ExamResult" />
-				<property name="whereClause" value="where status=:status" />
+				<property name="selectClause" value="select a.id, a.StudentName, a.Percentage, b.ExamName" />
+				<property name="fromClause" value="from ExamResult a,ExamInfo b " />
+				<property name="whereClause" value="where a.ExamInfoID = b.ID and a.status=:status" />
 
 				<property name="sortKeys">
 					<map>
-						<entry key="id">
-							<util:constant static-field="org.springframework.batch.item.database.Order.DESCENDING"/>
+						<entry key="a.id">
+							<util:constant static-field="org.springframework.batch.item.database.Order.DESCENDING" />
 						</entry>
 					</map>
 				</property>
@@ -70,6 +64,15 @@
 		</property>
 		<property name="pageSize" value="2" />
 		<property name="rowMapper" ref="examResultRowMapper" />
+	</bean>
+
+	<bean id="itemWriter" class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<property name="dataSource" ref="dataSource" />
+		<property name="itemSqlParameterSourceProvider">
+			<bean class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider" />
+		</property>
+		<property name="sql"
+			value="insert into ExamAggregrate (StudentName,ExamName,CreateTime,UpdateTime,Status) values (:studentName,:examName,now(),now(),1)" />
 	</bean>
 
 	<bean id="itemProcessor" class="me.sicongtang.j2ee.springbatch.ExamResultItemProcessor" />
@@ -86,7 +89,7 @@
 	<batch:job id="examResultBatchJob" restartable="true">
 		<batch:step id="processFiles">
 			<batch:tasklet allow-start-if-complete="false" start-limit="1" transaction-manager="transactionManager">
-				<batch:chunk reader="customReader" writer="customWriter" processor="itemProcessor" commit-interval="10" />
+				<batch:chunk reader="itemReader" writer="itemWriter" processor="itemProcessor" commit-interval="10" />
 			</batch:tasklet>
 		</batch:step>
 	</batch:job>
