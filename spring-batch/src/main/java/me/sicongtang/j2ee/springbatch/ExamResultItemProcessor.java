@@ -9,6 +9,8 @@ public class ExamResultItemProcessor implements ItemProcessor<ExamResult, ExamAg
 	@Override
 	public ExamAggregrate process(ExamResult result) throws Exception {
 		logger.info("Processing result :" + result);
+		
+		//Thread.sleep(Long.MAX_VALUE);
 
 		/*
 		 * Only return results which are more than 75%

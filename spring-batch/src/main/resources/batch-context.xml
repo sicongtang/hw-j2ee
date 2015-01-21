@@ -62,7 +62,7 @@
 				<entry key="status" value="1" />
 			</map>
 		</property>
-		<property name="pageSize" value="2" />
+		<property name="pageSize" value="1" />
 		<property name="rowMapper" ref="examResultRowMapper" />
 	</bean>
 
